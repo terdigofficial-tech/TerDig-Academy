@@ -1,0 +1,338 @@
+"use client";
+
+import { useState, useEffect, useMemo } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
+import { Plus, Edit2, Trash2, Save, X, Search } from 'lucide-react';
+import type { Grade } from '@/types';
+import { TableSkeleton } from '@/components/Skeleton';
+
+export default function GradesPage() {
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', level: 0 });
+  const [newForm, setNewForm] = useState({ name: '', level: 0 });
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortKey, setSortKey] = useState<string>('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
+
+  const filteredGrades = useMemo(() => {
+    let result = grades;
+
+    // Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((g) => g.name.toLowerCase().includes(q));
+    }
+
+    // Sort
+    if (sortKey) {
+      result = [...result].sort((a, b) => {
+        let aVal: string | number = '';
+        let bVal: string | number = '';
+        if (sortKey === 'name') { aVal = a.name.toLowerCase(); bVal = b.name.toLowerCase(); }
+        if (sortKey === 'level') { aVal = a.level; bVal = b.level; }
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [grades, searchQuery, sortKey, sortDir]);
+
+  // Fetch grades saat mount
+  useEffect(() => {
+    setLoading(true);
+    fetchGrades();
+  }, []);
+
+  const fetchGrades = async () => {
+    try {
+      const res = await fetch('/api/admin/grades');
+      if (res.ok) {
+        const data = await res.json();
+        setGrades(data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching grades:', err);
+      toast.error('Gagal memuat data kelas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdd = async () => {
+    if (!newForm.name.trim()) {
+      toast.error('Nama kelas tidak boleh kosong');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/grades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newForm)
+      });
+
+      if (res.ok) {
+        toast.success('Kelas berhasil ditambahkan');
+        setNewForm({ name: '', level: 0 });
+        setShowNewForm(false);
+        fetchGrades();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Gagal menambahkan kelas');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Network error');
+    }
+    setLoading(false);
+  };
+
+  const handleEdit = async (id: string) => {
+    if (!editForm.name.trim()) {
+      toast.error('Nama kelas tidak boleh kosong');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/grades/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      });
+
+      if (res.ok) {
+        toast.success('Kelas berhasil diperbarui');
+        setEditingId(null);
+        fetchGrades();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Gagal memperbarui kelas');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Network error');
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus kelas ini?')) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/grades/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        toast.success('Kelas berhasil dihapus');
+        fetchGrades();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Gagal menghapus kelas');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Network error');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div>
+      <Toaster position="top-right" />
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-3xl font-bold text-slate-800 dark:text-white">Manajemen Kelas</h2>
+        <button
+          onClick={() => setShowNewForm(!showNewForm)}
+          className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 text-sm font-medium"
+        >
+          <Plus className="w-4 h-4" /> Tambah Kelas
+        </button>
+      </div>
+
+      {/* Form Tambah Kelas */}
+      {showNewForm && (
+        <div className="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6 transition-colors">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">Tambah Kelas Baru</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Nama Kelas"
+              value={newForm.name}
+              onChange={(e) => setNewForm({ ...newForm, name: e.target.value })}
+              className="border rounded-lg px-4 py-2 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+            />
+            <input
+              type="number"
+              placeholder="Level"
+              value={newForm.level}
+              onChange={(e) => setNewForm({ ...newForm, level: parseInt(e.target.value) || 0 })}
+              className="border rounded-lg px-4 py-2 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+            />
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={handleAdd}
+              disabled={loading}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium text-sm"
+            >
+              Simpan
+            </button>
+            <button
+              onClick={() => setShowNewForm(false)}
+              className="bg-slate-300 text-slate-800 px-4 py-2 rounded-lg hover:bg-slate-400 font-medium text-sm"
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading skeleton */}
+      {loading && grades.length === 0 && (
+        <div className="mb-6">
+          <TableSkeleton rows={4} cols={3} />
+        </div>
+      )}
+
+      {/* Search Bar */}
+      {!loading && (
+      <div className="relative mb-6">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Cari kelas berdasarkan nama..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full border border-slate-200 dark:border-slate-600 rounded-xl pl-11 pr-10 py-3 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition placeholder:text-slate-400 dark:placeholder:text-slate-500"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+          >
+            <X className="w-4 h-4 text-slate-400" />
+          </button>
+        )}
+      </div>
+      )}
+
+      {/* Tabel Kelas */}
+      {loading && grades.length > 0 ? (
+        <div className="mb-6">
+          <TableSkeleton rows={3} cols={3} />
+        </div>
+      ) : (
+      <div className="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors">
+        <table className="w-full text-left">
+          <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 text-sm uppercase tracking-wider">
+            <tr>
+              <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('name')}>
+                Nama Kelas {sortKey === 'name' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 dark:text-slate-500 ml-1">↕</span>}
+              </th>
+              <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('level')}>
+                Level {sortKey === 'level' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 dark:text-slate-500 ml-1">↕</span>}
+              </th>
+              <th className="px-6 py-4 font-semibold">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            {filteredGrades
+              .map((grade) => (
+              <tr key={grade.id} className="hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors">
+                {editingId === grade.id ? (
+                  <>
+                    <td className="px-6 py-4">
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                        className="border rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 w-full"
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <input
+                        type="number"
+                        value={editForm.level}
+                        onChange={(e) => setEditForm({ ...editForm, level: parseInt(e.target.value) || 0 })}
+                        className="border rounded-lg px-3 py-2 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 w-20"
+                      />
+                    </td>
+                    <td className="px-6 py-4 flex gap-2">
+                      <button
+                        onClick={() => handleEdit(grade.id)}
+                        disabled={loading}
+                        className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm flex items-center gap-1"
+                      >
+                        <Save className="w-4 h-4" /> Simpan
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="bg-slate-300 text-slate-800 px-3 py-1 rounded-lg hover:bg-slate-400 text-sm flex items-center gap-1"
+                      >
+                        <X className="w-4 h-4" /> Batal
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="px-6 py-4 font-medium text-slate-700 dark:text-slate-200">{grade.name}</td>
+                    <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{grade.level}</td>
+                    <td className="px-6 py-4 flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingId(grade.id);
+                          setEditForm({ name: grade.name, level: grade.level });
+                        }}
+                        className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 text-sm flex items-center gap-1"
+                      >
+                        <Edit2 className="w-4 h-4" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(grade.id)}
+                        disabled={loading}
+                        className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 disabled:opacity-50 text-sm flex items-center gap-1"
+                      >
+                        <Trash2 className="w-4 h-4" /> Hapus
+                      </button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+            {grades?.length > 0 && searchQuery && filteredGrades.length === 0 && (
+              <tr>
+                <td colSpan={3} className="px-6 py-16 text-center">
+                  <p className="text-slate-700 dark:text-slate-300 font-medium">Tidak ada kelas yang cocok</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Coba gunakan kata kunci lain</p>
+                </td>
+              </tr>
+            )}
+            {(!grades || grades.length === 0) && (
+              <tr>
+                <td colSpan={3} className="px-6 py-16 text-center text-slate-600 dark:text-slate-400">
+                  Belum ada kelas
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      )}
+    </div>
+  );
+}
