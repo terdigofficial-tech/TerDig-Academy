@@ -31,6 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         roadmap_level,
         youtube_url,
         youtube_urls,
+        activity_links,
         duration_minutes,
         target_age,
         theme,
@@ -42,6 +43,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     `)
     .eq('id', id)
     .single();
+
+  console.log('📋 Session data:', session);
+  console.log('🎮 Episode activity_links:', session?.episodes?.activity_links);
 
   if (error) {
     console.error('❌ Error fetching session:', error);

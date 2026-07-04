@@ -16,6 +16,12 @@ interface RubricItem {
   max_score: number;
 }
 
+interface ActivityLinkItem {
+  type: 'game' | 'quiz' | 'activity' | 'song' | 'resource';
+  label: string;
+  url: string;
+}
+
 interface EpisodeInfo {
   episode_number: number;
   title: string;
@@ -30,6 +36,7 @@ interface EpisodeInfo {
   worksheet_url?: string;
   song_url?: string;
   rubric?: RubricItem[];
+  activity_links?: ActivityLinkItem[];
 }
 
 interface StudentInfo {
@@ -348,6 +355,49 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
               )}
             </div>
           </div>
+
+          {/* Activity Links Section */}
+          {episode.activity_links && episode.activity_links.length > 0 && (
+            <div className="bg-white dark:bg-slate-800/90 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                  🎮 Activity Links
+                </h2>
+              </div>
+              <div className="p-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {episode.activity_links.map((link, index) => {
+                    const typeConfig = {
+                      game: { icon: '🎮', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 hover:border-blue-400', label: 'Game' },
+                      quiz: { icon: '📝', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 hover:border-purple-400', label: 'Quiz' },
+                      activity: { icon: '🎨', color: 'bg-pink-100 dark:bg-pink-900/30 text-pink-800 dark:text-pink-200 hover:border-pink-400', label: 'Activity' },
+                      song: { icon: '🎵', color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 hover:border-green-400', label: 'Song' },
+                      resource: { icon: '📚', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 hover:border-amber-400', label: 'Resource' },
+                    };
+
+                    const config = typeConfig[link.type as keyof typeof typeConfig] || typeConfig.resource;
+
+                    return (
+                      <a
+                        key={index}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 border-slate-200 dark:border-slate-600 hover:shadow-md transition-all ${config.color}`}
+                      >
+                        <span className="text-2xl shrink-0">{config.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-slate-800 dark:text-slate-100 truncate">{link.label}</div>
+                          <div className="text-xs opacity-75">{config.label}</div>
+                        </div>
+                        <span className="text-xl shrink-0">→</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           {session.notes && (
             <div className="bg-white dark:bg-slate-800/90 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">

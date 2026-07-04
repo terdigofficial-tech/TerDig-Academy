@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 flex flex-col lg:flex-row transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
       {/* Mobile Header */}
       <div className="lg:hidden bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-4 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-2">
@@ -61,7 +61,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-40 w-72 bg-gradient-to-b from-indigo-600 to-indigo-800 text-white flex flex-col shadow-2xl
-        lg:static lg:inset-auto lg:h-screen
         transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
@@ -183,7 +182,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main Content */}
-      <main className="flex-1 w-full p-4 md:p-8 overflow-auto">
+      <main className="w-full lg:w-[calc(100vw-18rem)] lg:ml-72 min-h-screen p-4 md:p-8 overflow-x-hidden overflow-y-auto">
         <AdminErrorBoundary>
           {children}
         </AdminErrorBoundary>

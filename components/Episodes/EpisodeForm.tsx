@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, ArrowLeft, Save } from 'lucide-react';
+import { Loader2, ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import type { Episode } from '@/types';
+import type { Episode, ActivityLink } from '@/types';
 import RubricEditor from './RubricEditor';
 import FileUploader from './FileUploader';
 import YouTubePreview from './YouTubePreview';
@@ -42,6 +42,9 @@ export default function EpisodeForm({ mode, initialData, onSave, onPublish, onAr
   );
 
   const [rubric, setRubric] = useState(initialData?.rubric || []);
+  const [activityLinks, setActivityLinks] = useState<ActivityLink[]>(
+    initialData?.activity_links || []
+  );
   const [fileUrls, setFileUrls] = useState({
     facilitator_guide_url: initialData?.facilitator_guide_url || '',
     worksheet_url: initialData?.worksheet_url || '',
@@ -80,6 +83,7 @@ export default function EpisodeForm({ mode, initialData, onSave, onPublish, onAr
         worksheet_url: fileUrls.worksheet_url || '',
         song_url: fileUrls.song_url || '',
         thumbnail_url: fileUrls.thumbnail_url || '',
+        activity_links: activityLinks.filter(link => link.url.trim() !== ''),
       });
     } catch (err: any) {
       console.error('Save error:', err);
@@ -370,6 +374,94 @@ export default function EpisodeForm({ mode, initialData, onSave, onPublish, onAr
               onUploadComplete={(url) => setFileUrls({ ...fileUrls, thumbnail_url: url })}
             />
           </div>
+        </div>
+
+        {/* Activity Links */}
+        <div className="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 transition-colors">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+            🎮 Activity Links (Game, Quiz, dll)
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            Tambahkan link game/aktivitas interaktif untuk episode ini
+          </p>
+
+          <div className="space-y-3">
+            {activityLinks.map((link, index) => (
+              <div key={index} className="border border-slate-200 dark:border-slate-600 rounded-xl p-4 bg-slate-50 dark:bg-slate-700/50">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Type Dropdown */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Tipe</label>
+                    <select
+                      value={link.type}
+                      onChange={(e) => {
+                        const newLinks = [...activityLinks];
+                        newLinks[index] = { ...link, type: e.target.value as ActivityLink['type'] };
+                        setActivityLinks(newLinks);
+                      }}
+                      className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition"
+                    >
+                      <option value="game">🎮 Game</option>
+                      <option value="quiz">📝 Quiz</option>
+                      <option value="activity">🎨 Activity</option>
+                      <option value="song">🎵 Song</option>
+                      <option value="resource">📚 Resource</option>
+                    </select>
+                  </div>
+
+                  {/* Label Input */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Label</label>
+                    <input
+                      type="text"
+                      value={link.label}
+                      onChange={(e) => {
+                        const newLinks = [...activityLinks];
+                        newLinks[index] = { ...link, label: e.target.value };
+                        setActivityLinks(newLinks);
+                      }}
+                      placeholder="Contoh: Game Huruf A-E"
+                      className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition"
+                    />
+                  </div>
+
+                  {/* URL Input */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">URL</label>
+                    <input
+                      type="url"
+                      value={link.url}
+                      onChange={(e) => {
+                        const newLinks = [...activityLinks];
+                        newLinks[index] = { ...link, url: e.target.value };
+                        setActivityLinks(newLinks);
+                      }}
+                      placeholder="https://..."
+                      className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition"
+                    />
+                  </div>
+                </div>
+
+                {/* Delete Button */}
+                <button
+                  type="button"
+                  onClick={() => setActivityLinks(activityLinks.filter((_, i) => i !== index))}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition shrink-0"
+                >
+                  <Trash2 size={14} /> Hapus
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Add Button */}
+          <button
+            type="button"
+            onClick={() => setActivityLinks([...activityLinks, { type: 'game', label: '', url: '' }])}
+            className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-xl transition"
+          >
+            <Plus size={16} /> Tambah Activity Link
+          </button>
         </div>
 
         {/* Rubric Editor */}

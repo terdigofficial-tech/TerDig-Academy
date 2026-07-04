@@ -160,27 +160,28 @@ export default function EpisodeTable({
 
       {/* Table */}
       <div className="bg-white dark:bg-slate-800/90 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
           <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">
             <tr>
-              <th className={getSortClass('episode_number')} onClick={() => handleSort('episode_number')}>
+              <th className={`${getSortClass('episode_number')} whitespace-nowrap`} onClick={() => handleSort('episode_number')}>
                 No. Episode <SortIcon columnKey="episode_number" />
               </th>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Fase</th>
-              <th className={getSortClass('title')} onClick={() => handleSort('title')}>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Fase</th>
+              <th className={`${getSortClass('title')} whitespace-nowrap`} onClick={() => handleSort('title')}>
                 Judul <SortIcon columnKey="title" />
               </th>
-              <th className={getSortClass('terdig_level')} onClick={() => handleSort('terdig_level')}>
+              <th className={`${getSortClass('terdig_level')} whitespace-nowrap`} onClick={() => handleSort('terdig_level')}>
                 Level <SortIcon columnKey="terdig_level" />
               </th>
-              <th className={getSortClass('roadmap_level')} onClick={() => handleSort('roadmap_level')}>
+              <th className={`${getSortClass('roadmap_level')} whitespace-nowrap`} onClick={() => handleSort('roadmap_level')}>
                 Roadmap <SortIcon columnKey="roadmap_level" />
               </th>
-              <th className={getSortClass('status')} onClick={() => handleSort('status')}>
+              <th className={`${getSortClass('status')} whitespace-nowrap`} onClick={() => handleSort('status')}>
                 Status <SortIcon columnKey="status" />
               </th>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Durasi</th>
-              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Aksi</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Durasi</th>
+              <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right whitespace-nowrap">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -244,8 +245,8 @@ export default function EpisodeTable({
                 </tr>
               ))
             )}
-          </tbody>
-        </table>
+          </tbody></table>
+        </div>
 
         <Pagination
           currentPage={page}

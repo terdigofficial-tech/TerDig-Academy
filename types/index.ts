@@ -114,6 +114,12 @@ export interface Session {
   };
 }
 
+export interface ActivityLink {
+  type: 'game' | 'quiz' | 'activity' | 'song' | 'resource';
+  label: string;
+  url: string;
+}
+
 export interface Episode {
   id: string;
   episode_number: number;
@@ -131,6 +137,7 @@ export interface Episode {
   song_url?: string;
   thumbnail_url?: string;
   rubric?: RubricCriteria[];
+  activity_links?: ActivityLink[];
   status: 'not_started' | 'in_progress' | 'published' | 'archived';
   published_at?: string;
   notes?: string;
@@ -156,6 +163,7 @@ export interface EpisodeFormData {
   keyword_seo?: string;
   notes?: string;
   rubric?: RubricCriteria[];
+  activity_links?: ActivityLink[];
 }
 
 export interface Parent {

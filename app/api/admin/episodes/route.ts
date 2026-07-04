@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { z } from 'zod';
 
+const activityLinkSchema = z.object({
+  type: z.enum(['game', 'quiz', 'activity', 'song', 'resource']),
+  label: z.string().min(1, 'Label wajib diisi'),
+  url: z.string().url('URL tidak valid'),
+});
+
 const episodeSchema = z.object({
   episode_number: z.number().int().min(1).max(60),
   title: z.string().min(1, 'Judul wajib diisi'),
@@ -21,7 +27,11 @@ const episodeSchema = z.object({
   worksheet_url: z.string().optional(),
   song_url: z.string().optional(),
   thumbnail_url: z.string().optional(),
+  activity_links: z.array(activityLinkSchema).optional().default([]),
 });
+
+// Also export for reuse
+export { activityLinkSchema };
 
 export async function GET(req: NextRequest) {
   try {
@@ -132,6 +142,7 @@ export async function POST(req: NextRequest) {
         worksheet_url: validation.data.worksheet_url || '',
         song_url: validation.data.song_url || '',
         thumbnail_url: validation.data.thumbnail_url || '',
+        activity_links: validation.data.activity_links || [],
       })
       .select()
       .single();

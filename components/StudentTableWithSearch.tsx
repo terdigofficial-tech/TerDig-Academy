@@ -172,31 +172,31 @@ export default function StudentTableWithSearch({ students }: Props) {
           <table className="w-full text-left">
             <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 text-sm uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('full_name')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('full_name')}>
                   Nama {sortKey === 'full_name' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('current_level')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('current_level')}>
                   Level {sortKey === 'current_level' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('gradeName')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('gradeName')}>
                   Kelas {sortKey === 'gradeName' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('programName')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('programName')}>
                   Program {sortKey === 'programName' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('sessionCount')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('sessionCount')}>
                   Progres Sesi {sortKey === 'sessionCount' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('parent_name')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('parent_name')}>
                   Wali {sortKey === 'parent_name' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('parent_phone')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('parent_phone')}>
                   Telepon {sortKey === 'parent_phone' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none" onClick={() => handleSort('status')}>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('status')}>
                   Status {sortKey === 'status' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
-                <th className="px-6 py-4 font-semibold">Aksi</th>
+                <th className="px-6 py-4 font-semibold whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -282,8 +282,7 @@ export default function StudentTableWithSearch({ students }: Props) {
                   </td>
                 </tr>
               )}
-          </tbody>
-        </table>
+          </tbody></table>
       </div>
         <Pagination
           currentPage={safePage}
