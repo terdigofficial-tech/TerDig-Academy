@@ -18,9 +18,6 @@ export default async function AdminDashboard() {
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 7);
   const nextWeekStr = nextWeek.toISOString().split('T')[0];
-  const thisMonth = new Date();
-  thisMonth.setDate(1);
-  const thisMonthStr = thisMonth.toISOString().split('T')[0];
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
@@ -54,12 +51,11 @@ export default async function AdminDashboard() {
 
   // Sesi Minggu Ini count moved below, totalStudents computed later
 
-  // Laporan Terkirim (filtered by tutor via sessions join)
+  // Laporan Terkirim — total sepanjang waktu (konsisten dengan halaman Laporan & grafik status laporan)
   let reportsQuery = supabase
     .from('parent_reports')
     .select('*', { count: 'exact', head: true })
-    .eq('wa_status', 'sent')
-    .gte('created_at', thisMonthStr);
+    .eq('wa_status', 'sent');
   if (isTutor) {
     if (hasSessions) {
       reportsQuery = reportsQuery.in('session_id', tutorSessionIds);

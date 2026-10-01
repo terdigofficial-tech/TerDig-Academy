@@ -21,10 +21,10 @@ export async function GET(req: NextRequest) {
       .order('full_name', { ascending: true });
 
     if (role) {
-      query = query.eq('role', role);
+      query = query.ilike('role', role);
     }
     if (status) {
-      query = query.eq('status', status);
+      query = query.ilike('status', status);
     }
 
     const { data, error } = await query;

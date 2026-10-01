@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
 
     const reportStatusMap: Record<string, number> = {};
     for (const r of reports || []) {
-      const label = r.wa_status === 'sent' ? 'Terkirim' : 'Menunggu';
+      const label = r.wa_status === 'sent' ? 'Terkirim' : r.wa_status === 'failed' ? 'Gagal' : 'Menunggu';
       reportStatusMap[label] = (reportStatusMap[label] || 0) + 1;
     }
     const reportStatus = Object.entries(reportStatusMap).map(([name, value]) => ({ name, value }));

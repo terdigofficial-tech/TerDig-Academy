@@ -9,7 +9,7 @@ const activityLinkSchema = z.object({
 });
 
 const episodeUpdateSchema = z.object({
-  episode_number: z.number().int().min(1).max(60).optional(),
+  episode_number: z.number().int().min(1).max(999).optional(),
   title: z.string().min(1, 'Judul wajib diisi').optional(),
   terdig_level: z.enum(['pemula', 'menengah', 'lanjut']).optional(),
   roadmap_level: z.number().int().min(1).max(5).optional(),

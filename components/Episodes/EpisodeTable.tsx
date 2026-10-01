@@ -30,9 +30,10 @@ export interface FilterState {
 }
 
 function getFase(episodeNumber: number): string {
+  // Penomoran global kurikulum: Fase A = 1-60 (60 ep), Fase B = 61-132 (72 ep), Fase C = 133+
   if (episodeNumber >= 1 && episodeNumber <= 60) return 'A';
-  if (episodeNumber >= 61 && episodeNumber <= 120) return 'B';
-  if (episodeNumber >= 121 && episodeNumber <= 180) return 'C';
+  if (episodeNumber >= 61 && episodeNumber <= 132) return 'B';
+  if (episodeNumber >= 133) return 'C';
   return '-';
 }
 

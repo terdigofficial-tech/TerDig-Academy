@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
-import { Plus } from 'lucide-react';
+import { Plus, Upload } from 'lucide-react';
 import Link from 'next/link';
 import EpisodeTable, { type FilterState } from '@/components/Episodes/EpisodeTable';
+import EpisodeImport from '@/components/Episodes/EpisodeImport';
 import type { Episode } from '@/types';
 
 export default function EpisodesPage() {
@@ -15,6 +16,7 @@ export default function EpisodesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showImport, setShowImport] = useState(false);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<FilterState>({
     terdig_level: '',
@@ -89,16 +91,28 @@ export default function EpisodesPage() {
         <div>
           <h2 className="text-3xl font-bold text-slate-800 dark:text-white">Episode Manager</h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Kelola 180 episode untuk semua fase (A, B, C) TerDig Academy
+            Kelola episode kurikulum TerDig Academy — Fase A (No. 1–60), Fase B (61–132), Fase C (133+)
           </p>
         </div>
-        <Link
-          href="/admin/episodes/new"
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 text-sm font-medium"
-        >
-          <Plus className="w-4 h-4" /> Tambah Episode
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImport((v) => !v)}
+            className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-700 transition flex items-center gap-2 text-sm font-medium"
+          >
+            <Upload className="w-4 h-4" /> Impor Excel
+          </button>
+          <Link
+            href="/admin/episodes/new"
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 text-sm font-medium"
+          >
+            <Plus className="w-4 h-4" /> Tambah Episode
+          </Link>
+        </div>
       </div>
+
+      {showImport && (
+        <EpisodeImport onImported={fetchEpisodes} onClose={() => setShowImport(false)} />
+      )}
 
       <EpisodeTable
         episodes={episodes}

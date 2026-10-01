@@ -58,8 +58,8 @@ export default function EpisodeForm({ mode, initialData, onSave, onPublish, onAr
     const newErrors: Record<string, string> = {};
 
     if (!form.title.trim()) newErrors.title = 'Judul wajib diisi';
-    if (form.episode_number < 1 || form.episode_number > 60) {
-      newErrors.episode_number = 'Nomor episode harus 1-60';
+    if (form.episode_number < 1 || form.episode_number > 999) {
+      newErrors.episode_number = 'Nomor episode harus 1-999 (Fase A: 1-60, Fase B: 61-132, Fase C: 133+)';
     }
     if (form.duration_minutes && form.duration_minutes < 1) {
       newErrors.duration_minutes = 'Durasi harus positif';
@@ -161,7 +161,7 @@ export default function EpisodeForm({ mode, initialData, onSave, onPublish, onAr
               <input
                 type="number"
                 min={1}
-                max={60}
+                max={999}
                 value={form.episode_number}
                 onChange={(e) => updateField('episode_number', parseInt(e.target.value) || 1)}
                 className={`w-full border ${errors.episode_number ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'} rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition`}
