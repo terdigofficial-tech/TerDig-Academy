@@ -270,3 +270,23 @@ export interface WorksheetSubmission {
   tutor_reviewed: boolean;
   created_at: string;
 }
+
+export interface Lead {
+  id: string;
+  child_name: string;
+  parent_name?: string | null;
+  parent_phone?: string | null;
+  school_name?: string | null;
+  school_code?: string | null;
+  class_label?: string | null;
+  voucher_code?: string | null;
+  status: 'amplop_dibagi' | 'klaim_wa' | 'pemetaan' | 'trial_terjadwal' | 'trial_hadir' | 'daftar' | 'belum_minat' | 'hilang';
+  event_date?: string | null;
+  trial_date?: string | null;
+  source: string;
+  notes?: string | null;
+  converted_student_id?: string | null;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}

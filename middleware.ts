@@ -12,6 +12,7 @@ const ADMIN_ONLY_PAGES = [
   '/admin/materials',
   '/admin/users',
   '/admin/spp',
+  '/admin/leads',
 ];
 
 const ADMIN_ONLY_API = [
@@ -25,6 +26,7 @@ const ADMIN_ONLY_API = [
   '/api/admin/parents',
   '/api/admin/invoices',
   '/api/admin/payments',
+  '/api/admin/leads',
 ];
 
 function isAdminOnlyPath(pathname: string, patterns: string[]): boolean {
