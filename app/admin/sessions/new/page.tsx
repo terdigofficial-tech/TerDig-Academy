@@ -33,6 +33,9 @@ export default function NewSessionPage() {
     target_level: '',
     title: '',
     date: new Date().toISOString().split('T')[0],
+    start_time: '',
+    end_time: '',
+    capacity: 8,
     notes: '',
     tutor_id: '',
   });
@@ -110,6 +113,15 @@ export default function NewSessionPage() {
     if (!form.date) {
       newErrors.date = 'Tanggal sesi wajib diisi';
     }
+    if ((form.start_time && !form.end_time) || (!form.start_time && form.end_time)) {
+      newErrors.start_time = 'Jam mulai & selesai harus diisi sepasang';
+    }
+    if (form.start_time && form.end_time && form.end_time <= form.start_time) {
+      newErrors.end_time = 'Jam selesai harus setelah jam mulai';
+    }
+    if (!form.capacity || Number(form.capacity) < 1 || Number(form.capacity) > 30) {
+      newErrors.capacity = 'Kapasitas antara 1–30 anak';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -129,6 +141,9 @@ export default function NewSessionPage() {
           target_level: form.target_level,
           title: form.title,
           date: form.date,
+          start_time: form.start_time || null,
+          end_time: form.end_time || null,
+          capacity: Number(form.capacity) || 8,
           notes: form.notes || null,
           status: 'scheduled',
           tutor_id: userRole === 'admin' ? (form.tutor_id || null) : undefined,
@@ -296,6 +311,60 @@ export default function NewSessionPage() {
               </div>
               {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date}</p>}
             </div>
+
+            {/* Jam Sesi & Kapasitas */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Jam Mulai <span className="text-slate-400 dark:text-slate-500 font-normal">(opsional)</span>
+                </label>
+                <input
+                  type="time"
+                  value={form.start_time}
+                  onChange={(e) => {
+                    setForm({ ...form, start_time: e.target.value });
+                    if (errors.start_time) setErrors({ ...errors, start_time: '' });
+                  }}
+                  className={`w-full border ${errors.start_time ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'} rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition`}
+                />
+                {errors.start_time && <p className="text-xs text-red-500 mt-1">{errors.start_time}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Jam Selesai <span className="text-slate-400 dark:text-slate-500 font-normal">(opsional)</span>
+                </label>
+                <input
+                  type="time"
+                  value={form.end_time}
+                  onChange={(e) => {
+                    setForm({ ...form, end_time: e.target.value });
+                    if (errors.end_time) setErrors({ ...errors, end_time: '' });
+                  }}
+                  className={`w-full border ${errors.end_time ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'} rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition`}
+                />
+                {errors.end_time && <p className="text-xs text-red-500 mt-1">{errors.end_time}</p>}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Kapasitas (anak)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={form.capacity}
+                  onChange={(e) => {
+                    setForm({ ...form, capacity: Number(e.target.value) });
+                    if (errors.capacity) setErrors({ ...errors, capacity: '' });
+                  }}
+                  className={`w-full border ${errors.capacity ? 'border-red-400' : 'border-slate-200 dark:border-slate-600'} rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition`}
+                />
+                {errors.capacity && <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>}
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 dark:text-slate-500 -mt-2">
+              Jam operasional TerDig 14.00–20.00 WIB. Sistem menolak sesi yang jamnya bentrok dengan sesi lain di tanggal yang sama (satu ruang kelas). Kapasitas bawaan 8 mengikuti aturan kelas kecil TerDig (maks 5–8 anak).
+            </p>
 
             {/* Catatan */}
             <div>

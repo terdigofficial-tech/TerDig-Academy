@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Download, Loader2, Save, CheckCircle2, MessageSquare } from 'lucide-react';
 import { getYouTubeEmbedUrl, formatDate } from '@/lib/youtube';
+import { formatTimeRange } from '@/lib/session-time';
 import LevelBadge from '@/components/Episodes/LevelBadge';
 import StatusBadge from '@/components/Episodes/StatusBadge';
 import LoadingSkeleton from '@/components/Sessions/LoadingSkeleton';
@@ -50,6 +51,9 @@ interface SessionData {
   id: string;
   title: string;
   date: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  capacity?: number | null;
   status: string;
   notes?: string;
   target_level?: string;
@@ -286,6 +290,9 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
                 📚 EP-{String(episode.episode_number).padStart(3, '0')} &mdash; {episode.title}
               </span>
               <span>📅 {formatDate(session.date)}</span>
+              {formatTimeRange(session.start_time, session.end_time) && (
+                <span>🕐 {formatTimeRange(session.start_time, session.end_time)}</span>
+              )}
               {episode.duration_minutes && <span>⏱️ {episode.duration_minutes} menit</span>}
             </div>
           </div>
@@ -443,6 +450,8 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
                 <InfoRow label="Tema" value={episode.theme || '-'} />
                 <InfoRow label="Durasi Video" value={episode.duration_minutes ? `${episode.duration_minutes} menit` : '-'} />
                 <InfoRow label="Tanggal Sesi" value={formatDate(session.date)} />
+                <InfoRow label="Jam Sesi" value={formatTimeRange(session.start_time, session.end_time) || '-'} />
+                <InfoRow label="Kapasitas" value={session.capacity ? `${session.capacity} anak` : '-'} />
               </dl>
             </div>
           </div>

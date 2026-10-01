@@ -102,6 +102,9 @@ export interface Session {
   target_level: 'pemula' | 'menengah' | 'lanjut';
   title: string;
   date: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  capacity?: number;
   notes?: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
   tutor_id?: string;
@@ -112,6 +115,42 @@ export interface Session {
     title: string;
     terdig_level: string;
   };
+}
+
+export interface Invoice {
+  id: string;
+  student_id: string;
+  period: string; // 'YYYY-MM'
+  amount: number;
+  status: 'unpaid' | 'partial' | 'paid' | 'cancelled';
+  notes?: string | null;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  // Kolom hitungan dari API
+  paid_total?: number;
+  remaining?: number;
+  students?: {
+    id: string;
+    full_name: string;
+    parent_name?: string;
+    parent_phone?: string;
+    status?: string;
+    grades?: { name: string } | null;
+    programs?: { name: string } | null;
+  };
+}
+
+export interface Payment {
+  id: string;
+  invoice_id: string;
+  amount: number;
+  method: 'qris' | 'transfer' | 'cash' | 'other';
+  paid_at: string;
+  note?: string | null;
+  recorded_by?: string | null;
+  created_at?: string;
+  users?: { id: string; username: string; full_name: string } | null;
 }
 
 export interface ActivityLink {

@@ -1,15 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { getCurrentUser } from '@/lib/auth-middleware';
+import { findSessionConflict, isValidTimeRange, formatTimeRange } from '@/lib/session-time';
 import { z } from 'zod';
 
 const LEVELS = ['pemula', 'menengah', 'lanjut'] as const;
+
+const timeField = z
+  .string()
+  .regex(/^\d{2}:\d{2}(:\d{2})?$/, 'format jam harus HH:MM')
+  .optional()
+  .nullable();
 
 const createSessionSchema = z.object({
   episode_id: z.string().uuid('episode_id harus berupa UUID valid'),
   target_level: z.enum(LEVELS, { error: 'target_level harus pemula, menengah, atau lanjut' }),
   title: z.string().optional().default(''),
   date: z.string().optional().default(() => new Date().toISOString().split('T')[0]),
+  start_time: timeField,
+  end_time: timeField,
+  capacity: z
+    .number()
+    .int('kapasitas harus bilangan bulat')
+    .min(1, 'kapasitas minimal 1')
+    .max(30, 'kapasitas maksimal 30')
+    .optional()
+    .default(8),
   notes: z.string().optional().nullable(),
   status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional().default('scheduled'),
 });
@@ -51,6 +67,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Episode tidak ditemukan' }, { status: 404 });
     }
 
+    // Validasi jam sesi: harus sepasang dan jam selesai setelah jam mulai
+    const startTime = validation.data.start_time || null;
+    const endTime = validation.data.end_time || null;
+    if (!isValidTimeRange(startTime, endTime)) {
+      return NextResponse.json(
+        { error: 'Jam sesi tidak valid: isi jam mulai & selesai, dan jam selesai harus setelah jam mulai' },
+        { status: 400 },
+      );
+    }
+
+    // Cek bentrok jadwal: satu ruang kelas, sesi di tanggal yang sama tidak boleh beririsan jam
+    if (startTime && endTime && validation.data.status !== 'cancelled') {
+      const { data: sameDay, error: conflictQueryError } = await supabase
+        .from('sessions')
+        .select('id, title, date, start_time, end_time, status')
+        .eq('date', validation.data.date)
+        .not('start_time', 'is', null);
+      if (conflictQueryError) {
+        return NextResponse.json({ error: conflictQueryError.message }, { status: 500 });
+      }
+      const conflict = findSessionConflict(
+        { date: validation.data.date, start_time: startTime, end_time: endTime, status: validation.data.status },
+        sameDay || [],
+      );
+      if (conflict) {
+        return NextResponse.json(
+          {
+            error: `Bentrok jadwal dengan sesi "${conflict.title}" (${formatTimeRange(conflict.start_time, conflict.end_time)}) di tanggal yang sama`,
+          },
+          { status: 409 },
+        );
+      }
+    }
+
     // Auto-generate title jika tidak disediakan
     const title = validation.data.title || `EP-${String(episode.episode_number).padStart(3, '0')} - ${episode.title}`;
 
@@ -60,6 +110,9 @@ export async function POST(req: NextRequest) {
       target_level: validation.data.target_level,
       title,
       date: validation.data.date,
+      start_time: startTime,
+      end_time: endTime,
+      capacity: validation.data.capacity,
       notes: validation.data.notes || null,
       status: validation.data.status,
     };
@@ -133,7 +186,10 @@ export async function GET(req: NextRequest) {
       query = query.eq('episode_id', episodeId);
     }
 
-    query = query.order('date', { ascending: false }).order('created_at', { ascending: false });
+    query = query
+      .order('date', { ascending: false })
+      .order('start_time', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false });
 
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;

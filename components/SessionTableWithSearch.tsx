@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import Link from 'next/link';
-import { Settings, Search, X, Filter, ChevronDown, Calendar, BookOpen } from 'lucide-react';
+import { Settings, Search, X, Filter, ChevronDown, Calendar, BookOpen, Clock } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { formatTimeRange } from '@/lib/session-time';
 
 interface SessionItem {
   id: string;
@@ -11,6 +12,9 @@ interface SessionItem {
   target_level: string | null;
   title: string;
   date: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  capacity?: number | null;
   notes?: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
   created_at?: string;
@@ -336,6 +340,13 @@ export default function SessionTableWithSearch({ sessions, userRole = 'admin' }:
                         year: 'numeric',
                       })}
                     </div>
+                    {formatTimeRange(session.start_time, session.end_time) && (
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        {formatTimeRange(session.start_time, session.end_time)}
+                        {session.capacity ? <span>• Maks {session.capacity} anak</span> : null}
+                      </div>
+                    )}
                   </td>
                   {userRole === 'admin' && (
                     <td className="px-6 py-4">
