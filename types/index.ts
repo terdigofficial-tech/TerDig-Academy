@@ -296,3 +296,25 @@ export interface Lead {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface Broadcast {
+  id: string;
+  title: string;
+  message_template: string;
+  audience?: { program_ids?: string[]; grade_ids?: string[] } | null;
+  created_at?: string;
+  total?: number;
+  sent?: number;
+}
+
+export interface BroadcastRecipient {
+  id: string;
+  broadcast_id: string;
+  student_id: string;
+  parent_name?: string | null;
+  parent_phone?: string | null;
+  personalized_text: string;
+  status: 'pending' | 'sent';
+  sent_at?: string | null;
+  students?: { full_name?: string } | null;
+}

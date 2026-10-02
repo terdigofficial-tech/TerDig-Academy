@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, LogOut, FileText, School, Tag, Menu, X, Moon, Sun, Film, Users2, UserCog, Wallet, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, LogOut, FileText, School, Tag, Menu, X, Moon, Sun, Film, Users2, UserCog, Wallet, UserPlus, Megaphone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import AdminErrorBoundary from '@/components/AdminErrorBoundary';
 import { useTheme } from '@/components/ThemeProvider';
@@ -149,6 +149,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             <Wallet className="w-5 h-5" />
             SPP
+          </Link>
+          <Link
+            href="/admin/broadcasts"
+            className={`${getMenuClass('/admin/broadcasts')} ${userRole === 'tutor' ? 'hidden' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <Megaphone className="w-5 h-5" />
+            Broadcast
           </Link>
           <Link
             href="/admin/users"
