@@ -6,16 +6,19 @@ import toast, { Toaster } from 'react-hot-toast';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Grade, Program } from '@/types';
+import { TIERS, TIER_LABELS, suggestProgramIdForGradeLevel, curriculumPhaseForGradeLevel, CURRICULUM_PHASE_LABELS } from '@/lib/programs';
 
 export default function AddStudentPage() {
-  const [form, setForm] = useState({ 
-    full_name: '', 
-    parent_name: '', 
-    parent_phone: '', 
+  const [form, setForm] = useState({
+    full_name: '',
+    parent_name: '',
+    parent_phone: '',
     current_level: 1,
     grade_id: '',
-    program_id: ''
+    program_id: '',
+    tier: 'reguler' as string,
   });
+  const [programTouched, setProgramTouched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
@@ -113,13 +116,32 @@ export default function AddStudentPage() {
           <select id="grade_id"
             className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition"
             value={form.grade_id}
-            onChange={e => setForm({...form, grade_id: e.target.value})}
+            onChange={e => {
+              const gradeId = e.target.value;
+              const grade = grades.find(g => g.id === gradeId);
+              const suggested = grade ? suggestProgramIdForGradeLevel(grade.level, programs) : null;
+              setForm({
+                ...form,
+                grade_id: gradeId,
+                // Isi otomatis program sesuai fase kelas bila belum dipilih manual
+                program_id: (!programTouched && suggested) ? suggested : form.program_id,
+              });
+            }}
           >
             <option value="">-- Pilih Kelas --</option>
             {grades.map(grade => (
               <option key={grade.id} value={grade.id}>{grade.name}</option>
             ))}
           </select>
+          {(() => {
+            const grade = grades.find(g => g.id === form.grade_id);
+            const phase = grade ? curriculumPhaseForGradeLevel(grade.level) : null;
+            return phase ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+                Kelas ini masuk jalur kurikulum {CURRICULUM_PHASE_LABELS[phase]}.
+              </p>
+            ) : null;
+          })()}
         </div>
 
         <div>
@@ -127,13 +149,27 @@ export default function AddStudentPage() {
           <select id="program_id"
             className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition"
             value={form.program_id}
-            onChange={e => setForm({...form, program_id: e.target.value})}
+            onChange={e => { setProgramTouched(true); setForm({...form, program_id: e.target.value}); }}
           >
             <option value="">-- Pilih Program --</option>
             {programs.map(program => (
               <option key={program.id} value={program.id}>{program.name}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="tier" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tier</label>
+          <select id="tier"
+            className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition"
+            value={form.tier}
+            onChange={e => setForm({...form, tier: e.target.value})}
+          >
+            {TIERS.map(t => (
+              <option key={t} value={t}>{TIER_LABELS[t]}</option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Tingkatan harga/langganan siswa.</p>
         </div>
 
         <button disabled={loading} className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 font-medium flex items-center justify-center gap-2">

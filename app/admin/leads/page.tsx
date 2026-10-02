@@ -8,6 +8,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import {
   LEAD_STATUSES, LEAD_STATUS_LABELS, toWaNumber, type LeadStatus, type LeadSummary,
 } from '@/lib/leads';
+import { suggestProgramIdForGradeLevel } from '@/lib/programs';
 import type { Lead } from '@/types';
 
 interface SchoolOption {
@@ -24,6 +25,7 @@ interface GradeOption {
 interface ProgramOption {
   id: string;
   name: string;
+  phase_key?: string | null;
 }
 
 const STATUS_BADGE: Record<LeadStatus, string> = {
@@ -90,6 +92,7 @@ export default function LeadsPage() {
   const [convertTarget, setConvertTarget] = useState<Lead | null>(null);
   const [convertGradeId, setConvertGradeId] = useState('');
   const [convertProgramId, setConvertProgramId] = useState('');
+  const [convertProgramTouched, setConvertProgramTouched] = useState(false);
   const [convertLevel, setConvertLevel] = useState('1');
   const [converting, setConverting] = useState(false);
 
@@ -270,6 +273,7 @@ export default function LeadsPage() {
     setConvertTarget(lead);
     setConvertGradeId('');
     setConvertProgramId('');
+    setConvertProgramTouched(false);
     setConvertLevel('1');
   }
 
@@ -642,17 +646,36 @@ export default function LeadsPage() {
             <div className="space-y-3">
               <div>
                 <label className={labelClass}>Kelas *</label>
-                <select className={inputClass} value={convertGradeId} onChange={(e) => setConvertGradeId(e.target.value)} required>
+                <select
+                  className={inputClass}
+                  value={convertGradeId}
+                  onChange={(e) => {
+                    const gid = e.target.value;
+                    const grade = grades.find((g) => g.id === gid);
+                    const suggested = grade ? suggestProgramIdForGradeLevel(grade.level, programs) : null;
+                    setConvertGradeId(gid);
+                    if (!convertProgramTouched && suggested) setConvertProgramId(suggested);
+                  }}
+                  required
+                >
                   <option value="">— Pilih kelas —</option>
                   {grades.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               </div>
               <div>
                 <label className={labelClass}>Program *</label>
-                <select className={inputClass} value={convertProgramId} onChange={(e) => setConvertProgramId(e.target.value)} required>
+                <select
+                  className={inputClass}
+                  value={convertProgramId}
+                  onChange={(e) => { setConvertProgramTouched(true); setConvertProgramId(e.target.value); }}
+                  required
+                >
                   <option value="">— Pilih program —</option>
                   {programs.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
+                {!convertProgramTouched && convertProgramId && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Terisi otomatis sesuai kelas — boleh diubah.</p>
+                )}
               </div>
               <div>
                 <label className={labelClass}>Level Awal</label>

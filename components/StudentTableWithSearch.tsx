@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { Users, Plus, Edit2, Search, X, Filter, ChevronDown, ToggleLeft, ToggleRight } from 'lucide-react';
 import Pagination from '@/components/Pagination';
+import { tierLabel } from '@/lib/programs';
 
 interface Student {
   id: string;
@@ -16,6 +17,7 @@ interface Student {
   isReady: boolean;
   gradeName: string;
   programName: string;
+  tier: string;
 }
 
 interface Props {
@@ -28,6 +30,7 @@ function getSortValue(s: Student, key: string): string | number {
     case 'current_level': return s.current_level;
     case 'gradeName': return (s.gradeName || '').toLowerCase();
     case 'programName': return (s.programName || '').toLowerCase();
+    case 'tier': return tierLabel(s.tier).toLowerCase();
     case 'sessionCount': return s.sessionCount;
     case 'parent_name': return (s.parent_name || '').toLowerCase();
     case 'parent_phone': return (s.parent_phone || '');
@@ -72,7 +75,8 @@ export default function StudentTableWithSearch({ students }: Props) {
           s.parent_name?.toLowerCase().includes(q) ||
           s.parent_phone?.includes(q) ||
           s.gradeName?.toLowerCase().includes(q) ||
-          s.programName?.toLowerCase().includes(q)
+          s.programName?.toLowerCase().includes(q) ||
+          tierLabel(s.tier).toLowerCase().includes(q)
         );
       });
     }
@@ -184,6 +188,9 @@ export default function StudentTableWithSearch({ students }: Props) {
                 <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('programName')}>
                   Program {sortKey === 'programName' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
+                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('tier')}>
+                  Tier {sortKey === 'tier' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
+                </th>
                 <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-slate-100/80 dark:hover:bg-slate-700/50 transition select-none whitespace-nowrap" onClick={() => handleSort('sessionCount')}>
                   Progres Sesi {sortKey === 'sessionCount' ? (sortDir === 'asc' ? '↑' : '↓') : <span className="text-slate-300 ml-1">↕</span>}
                 </th>
@@ -206,6 +213,17 @@ export default function StudentTableWithSearch({ students }: Props) {
                   <td className="px-6 py-4 text-slate-700 dark:text-slate-300">Level {s.current_level}</td>
                   <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{s.gradeName}</td>
                   <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{s.programName}</td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      s.tier === 'privat'
+                        ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300'
+                        : s.tier === 'premium'
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+                    }`}>
+                      {tierLabel(s.tier)}
+                    </span>
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{s.sessionCount}/4</span>
@@ -277,7 +295,7 @@ export default function StudentTableWithSearch({ students }: Props) {
               ))}
               {paginatedStudents.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-6 py-16 text-center text-slate-600 dark:text-slate-400">
+                  <td colSpan={10} className="px-6 py-16 text-center text-slate-600 dark:text-slate-400">
                     {isFiltered ? 'Tidak ada siswa yang cocok dengan pencarian' : 'Belum ada siswa terdaftar'}
                   </td>
                 </tr>

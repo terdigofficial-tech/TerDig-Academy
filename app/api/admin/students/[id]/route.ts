@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { requireRole } from '@/lib/auth-middleware';
+import { isValidTier } from '@/lib/programs';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -74,11 +75,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const { id } = await params;
-    const { full_name, parent_name, parent_phone, current_level, grade_id, program_id, status } = await req.json();
+    const { full_name, parent_name, parent_phone, current_level, grade_id, program_id, status, tier } = await req.json();
 
     // Validasi
     if (!full_name || !parent_phone) {
       return NextResponse.json({ error: 'Nama dan telepon wajib diisi' }, { status: 400 });
+    }
+    if (tier !== undefined && tier !== null && !isValidTier(tier)) {
+      return NextResponse.json({ error: 'Tier tidak valid (reguler/premium/privat)' }, { status: 400 });
     }
 
     const supabase = createServerClient();
@@ -94,6 +98,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     // Tambahkan grade_id dan program_id jika ada
     if (grade_id) updateData.grade_id = grade_id;
     if (program_id) updateData.program_id = program_id;
+    if (isValidTier(tier)) updateData.tier = tier;
 
     const { data, error } = await supabase
       .from('students')

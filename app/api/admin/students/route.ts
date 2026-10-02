@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { requireRole } from '@/lib/auth-middleware';
+import { isValidTier } from '@/lib/programs';
 
 export async function GET() {
   const supabase = createServerClient();
@@ -17,6 +18,9 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServerClient();
   const body = await req.json();
+  if (body.tier !== undefined && body.tier !== null && !isValidTier(body.tier)) {
+    return NextResponse.json({ error: 'Tier tidak valid (reguler/premium/privat)' }, { status: 400 });
+  }
   const { data, error } = await supabase.from('students').insert(body).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);

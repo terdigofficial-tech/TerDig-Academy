@@ -22,10 +22,15 @@ export interface Grade {
   created_at?: string;
 }
 
+export type Tier = 'reguler' | 'premium' | 'privat';
+export type ProgramPhaseKey = 'fase_a' | 'fase_b' | 'fase_c';
+
 export interface Program {
   id: string;
   name: string;
   description?: string;
+  phase_key?: ProgramPhaseKey | null;
+  target_label?: string | null;
   created_at?: string;
 }
 
@@ -54,6 +59,7 @@ export interface Student {
   status: 'active' | 'inactive';
   grade_id?: string;
   program_id?: string;
+  tier?: Tier;
 }
 
 export interface Attendance {

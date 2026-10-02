@@ -6,6 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Grade, Program } from '@/types';
+import { TIERS, TIER_LABELS } from '@/lib/programs';
 
 export default function EditStudentPage() {
   const params = useParams();
@@ -19,6 +20,7 @@ export default function EditStudentPage() {
     current_level: 1,
     grade_id: '',
     program_id: '',
+    tier: 'reguler',
     status: 'active'
   });
 
@@ -46,6 +48,7 @@ export default function EditStudentPage() {
             current_level: studentData.current_level || 1,
             grade_id: studentData.grade_id || '',
             program_id: studentData.program_id || '',
+            tier: studentData.tier || 'reguler',
             status: studentData.status || 'active'
           });
         } else {
@@ -178,6 +181,20 @@ export default function EditStudentPage() {
               <option key={program.id} value={program.id}>{program.name}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="edit_tier" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tier</label>
+          <select id="edit_tier"
+            className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition"
+            value={form.tier}
+            onChange={(e) => setForm({ ...form, tier: e.target.value })}
+          >
+            {TIERS.map((t) => (
+              <option key={t} value={t}>{TIER_LABELS[t]}</option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">Tingkatan harga/langganan siswa.</p>
         </div>
 
         <div>

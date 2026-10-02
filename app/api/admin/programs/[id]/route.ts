@@ -1,10 +1,11 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
+import { normalizePhaseKey } from '@/lib/programs';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { name, description } = await req.json();
+    const { name, description, phase_key, target_label } = await req.json();
 
     if (!name) {
       return NextResponse.json({ error: 'Nama program wajib diisi' }, { status: 400 });
@@ -13,7 +14,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const supabase = createServerClient();
     const { data, error } = await supabase
       .from('programs')
-      .update({ name, description })
+      .update({
+        name,
+        description,
+        phase_key: normalizePhaseKey(phase_key),
+        target_label: target_label?.trim() || null,
+      })
       .eq('id', id)
       .select()
       .single();
