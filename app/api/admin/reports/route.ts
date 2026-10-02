@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
           parent_phone,
           current_level
         ),
-        sessions!inner (
+        sessions (
           id,
           title,
           date,

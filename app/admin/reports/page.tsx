@@ -3,13 +3,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Search, FileText, Send, Clock, Calendar, Eye, RefreshCw, Download, X, MessageSquare, Filter, ChevronDown, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import BiweeklyTab from '@/components/Reports/BiweeklyTab';
 
 interface Report {
   id: string;
   student_id: string;
   session_id: string;
   report_type: string;
-  content_json: { text: string } | null;
+  content_json: { text: string; meta?: { from?: string; to?: string } } | null;
   wa_status: 'pending' | 'sent' | 'failed';
   sent_at: string | null;
   created_at: string;
@@ -42,6 +43,7 @@ export default function ReportsPage() {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [previewReport, setPreviewReport] = useState<Report | null>(null);
   const [sendingWA, setSendingWA] = useState<string | null>(null);
+  const [tab, setTab] = useState<'session' | 'biweekly'>('session');
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -201,7 +203,7 @@ export default function ReportsPage() {
       <Toaster position="top-right" />
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold text-slate-800 dark:text-white">Laporan Orang Tua</h2>
         <div className="flex items-center gap-3">
           <button
@@ -220,6 +222,31 @@ export default function ReportsPage() {
           </a>
         </div>
       </div>
+
+      {/* Tab */}
+      <div className="flex gap-2 mb-6">
+        {([
+          { v: 'session', label: 'Laporan Per Sesi' },
+          { v: 'biweekly', label: 'Rekap 2 Mingguan' },
+        ] as const).map((t) => (
+          <button
+            key={t.v}
+            onClick={() => setTab(t.v)}
+            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition ${
+              tab === t.v
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'biweekly' ? (
+        <BiweeklyTab />
+      ) : (
+      <>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -367,6 +394,18 @@ export default function ReportsPage() {
                       )}
                     </td>
                     <td className="py-3.5 pr-4">
+                      {report.report_type === 'biweekly' ? (
+                        <div>
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300">
+                            Rekap 2 Mingguan
+                          </span>
+                          {report.content_json?.meta?.from && (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                              {report.content_json.meta.from} – {report.content_json.meta.to}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
                       <div className="text-sm text-slate-700 dark:text-slate-300">
                         {report.episode_number ? (
                           <span>
@@ -376,6 +415,7 @@ export default function ReportsPage() {
                           report.session_title
                         )}
                       </div>
+                      )}
                       {report.session_date && (
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                           {formatDate(report.session_date)}
@@ -443,6 +483,9 @@ export default function ReportsPage() {
           </div>
         )}
       </div>
+
+      </>
+      )}
 
       {/* Preview Modal */}
       {previewReport && (

@@ -27,6 +27,7 @@ const ADMIN_ONLY_API = [
   '/api/admin/invoices',
   '/api/admin/payments',
   '/api/admin/leads',
+  '/api/admin/biweekly',
 ];
 
 function isAdminOnlyPath(pathname: string, patterns: string[]): boolean {
