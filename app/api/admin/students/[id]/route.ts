@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { requireRole } from '@/lib/auth-middleware';
 import { isValidTier } from '@/lib/programs';
+import { maskStudentPhone } from '@/lib/phone-mask';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // Tutor boleh melihat detail siswa, tetapi nomor HP wali disamarkan.
+    const auth = await requireRole(req, ['admin', 'tutor']);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error.message }, { status: auth.error.status });
+    }
+
     const { id } = await params;
     const supabase = createServerClient();
 
@@ -24,7 +31,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     console.log('✓ Student fetched:', id);
-    return NextResponse.json(data);
+    return NextResponse.json(auth.user.role === 'tutor' ? maskStudentPhone(data) : data);
   } catch (err: any) {
     console.error('❌ Error in GET student:', err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });

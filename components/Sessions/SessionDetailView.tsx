@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, Loader2, Save, CheckCircle2, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, Save, CheckCircle2, MessageSquare, AlertTriangle } from 'lucide-react';
 import { getYouTubeEmbedUrl, formatDate } from '@/lib/youtube';
 import { formatTimeRange } from '@/lib/session-time';
 import LevelBadge from '@/components/Episodes/LevelBadge';
@@ -59,6 +59,8 @@ interface SessionData {
   target_level?: string;
   episodes: EpisodeInfo;
   students?: StudentInfo[];
+  /** Siswa aktif yang tidak muat dalam kapasitas sesi (dari API). */
+  capacity_overflow?: { count: number; names: string[] };
   attendance?: any[];
   assessments?: any[];
 }
@@ -179,7 +181,11 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
         throw new Error(result.errors?.join(', ') || 'Gagal menyimpan data');
       }
 
-      toast.success('Data kehadiran dan penilaian berhasil disimpan!');
+      if (result.capacity_dropped > 0) {
+        toast.success(`Data tersimpan. ${result.capacity_dropped} record di luar kapasitas sesi dibuang.`);
+      } else {
+        toast.success('Data kehadiran dan penilaian berhasil disimpan!');
+      }
     } catch (err: any) {
       console.error('Error saving:', err);
       toast.error(err.message || 'Gagal menyimpan data');
@@ -228,7 +234,11 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
         throw new Error(result.errors?.join(', ') || 'Gagal mark complete');
       }
 
-      toast.success('✅ Sesi berhasil ditandai selesai!');
+      if (result.capacity_dropped > 0) {
+        toast.success(`✅ Sesi selesai. ${result.capacity_dropped} record di luar kapasitas sesi dibuang.`);
+      } else {
+        toast.success('✅ Sesi berhasil ditandai selesai!');
+      }
       // Reload to update status
       setTimeout(() => window.location.reload(), 1000);
     } catch (err: any) {
@@ -489,7 +499,9 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
                 <span className="text-sm text-slate-500 dark:text-slate-400">Status saat ini</span>
                 <StatusBadge status={session.status as 'scheduled' | 'in_progress' | 'completed' | 'cancelled'} />
               </div>
-              <div className="mt-3 text-xs text-slate-400 dark:text-slate-500">Siswa aktif: {students.length} orang</div>
+              <div className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+                Siswa dalam sesi: {students.length}{session.capacity ? ` / kapasitas ${session.capacity}` : ''} orang
+              </div>
             </div>
           </div>
         </div>
@@ -497,6 +509,22 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
 
       {/* ===== SECTION: ATTENDANCE & ASSESSMENT ===== */}
       <div className="mt-8 space-y-6 border-t border-slate-200 dark:border-slate-700 pt-8">
+
+        {/* Peringatan kapasitas: ada siswa aktif yang tidak muat dalam sesi ini */}
+        {session.capacity_overflow && session.capacity_overflow.count > 0 && (
+          <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 text-sm">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="text-amber-800 dark:text-amber-200">
+              <div className="font-semibold">
+                Kapasitas penuh: {session.capacity} dari {(session.students?.length || 0) + session.capacity_overflow.count} siswa aktif masuk sesi ini.
+              </div>
+              <div className="mt-1">
+                {session.capacity_overflow.count} siswa tidak masuk daftar: {session.capacity_overflow.names.join(', ')}.
+                Hubungi admin untuk menaikkan kapasitas atau memindahkan mereka ke sesi lain.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 7. Kehadiran Siswa */}
         <div className="bg-white dark:bg-slate-800/90 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">

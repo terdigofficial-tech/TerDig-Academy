@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { getCurrentUser } from '@/lib/auth-middleware';
-
-// Mapping level pendidikan ke grade levels di tabel grades
-const LEVEL_TO_GRADES: Record<string, number[]> = {
-  'pemula': [0, 1, 2],      // TK, Kelas 1, Kelas 2
-  'menengah': [3, 4],       // Kelas 3, Kelas 4
-  'lanjut': [5, 6],         // Kelas 5, Kelas 6
-};
+import { applySessionCapacity, LEVEL_TO_GRADES, fetchSessionRosterIds } from '@/lib/session-capacity';
+import { maskStudentPhone } from '@/lib/phone-mask';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -82,6 +77,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     students = studentsData || [];
   }
 
+  // Penegakan kapasitas: roster dibatasi sebanyak session.capacity.
+  // Siswa di luar kapasitas dilaporkan sebagai overflow agar admin bisa
+  // memindahkan mereka ke sesi lain atau menaikkan kapasitas.
+  const { roster, overflow } = applySessionCapacity(students, session.capacity ?? null);
+
+  // Masking HP wali untuk tutor: tutor tidak boleh melihat nomor utuh
+  // saat browsing daftar siswa.
+  const visibleRoster =
+    currentUser.role === 'tutor' ? roster.map(maskStudentPhone) : roster;
+
   // Fetch existing attendance untuk session ini
   const { data: existingAttendance } = await supabase
     .from('attendance')
@@ -106,7 +111,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       notes: session.notes,
       target_level: session.target_level,
       episodes: session.episodes,
-      students: students || [],
+      students: visibleRoster,
+      // Info kapasitas untuk UI: berapa siswa yang tidak muat + siapa saja
+      capacity_overflow: overflow,
       attendance: existingAttendance || [],
       assessments: existingAssessments || [],
     }
@@ -126,7 +133,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   // Verifikasi session exists dan role
   const { data: session } = await supabase
     .from('sessions')
-    .select('tutor_id')
+    .select('tutor_id, capacity, target_level')
     .eq('id', id)
     .single();
 
@@ -145,9 +152,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const errors: string[] = [];
 
+  // Penegakan kapasitas: hanya siswa dalam roster (setelah capping) yang boleh
+  // tercatat pada absensi/penilaian sesi ini. Record untuk siswa di luar
+  // kapasitas dibuang dan dilaporkan.
+  const allowedIds = await fetchSessionRosterIds(supabase, session.target_level, session.capacity);
+  let capacityDropped = 0;
+  const withinCapacity = (records: any[]) =>
+    records.filter((r) => {
+      if (allowedIds.has(r.student_id)) return true;
+      capacityDropped += 1;
+      return false;
+    });
+
   // 1. Save attendance (batch upsert)
-  if (attendance && Array.isArray(attendance) && attendance.length > 0) {
-    const attendanceRecords = attendance.map((att: any) => ({
+  const attendanceInput = withinCapacity(attendance && Array.isArray(attendance) ? attendance : []);
+  if (attendanceInput.length > 0) {
+    const attendanceRecords = attendanceInput.map((att: any) => ({
       session_id: id,
       student_id: att.student_id,
       status: att.status || 'present',
@@ -166,8 +186,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   // 2. Save assessments (batch upsert)
-  if (assessments && Array.isArray(assessments) && assessments.length > 0) {
-    const assessmentRecords = assessments.map((asmt: any) => {
+  const assessmentsInput = withinCapacity(assessments && Array.isArray(assessments) ? assessments : []);
+  if (assessmentsInput.length > 0) {
+    const assessmentRecords = assessmentsInput.map((asmt: any) => {
       const scores = asmt.rubric_scores || {};
       const totalScore = asmt.total_score ||
         Object.values(scores).reduce((sum: number, s: any) => sum + (Number(s) || 0), 0);
@@ -207,5 +228,5 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ success: false, errors }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, capacity_dropped: capacityDropped });
 }
