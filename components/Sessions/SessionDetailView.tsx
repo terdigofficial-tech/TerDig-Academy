@@ -54,6 +54,7 @@ interface SessionData {
   start_time?: string | null;
   end_time?: string | null;
   capacity?: number | null;
+  room?: string | null;
   status: string;
   notes?: string;
   target_level?: string;
@@ -462,6 +463,7 @@ export default function SessionDetailView({ sessionId }: { sessionId: string }) 
                 <InfoRow label="Tanggal Sesi" value={formatDate(session.date)} />
                 <InfoRow label="Jam Sesi" value={formatTimeRange(session.start_time, session.end_time) || '-'} />
                 <InfoRow label="Kapasitas" value={session.capacity ? `${session.capacity} anak` : '-'} />
+                <InfoRow label="Ruangan" value={session.room || '-'} />
               </dl>
             </div>
           </div>

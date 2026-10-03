@@ -36,6 +36,7 @@ export default function NewSessionPage() {
     start_time: '',
     end_time: '',
     capacity: 8,
+    room: '',
     notes: '',
     tutor_id: '',
   });
@@ -144,6 +145,7 @@ export default function NewSessionPage() {
           start_time: form.start_time || null,
           end_time: form.end_time || null,
           capacity: Number(form.capacity) || 8,
+          room: form.room.trim() || null,
           notes: form.notes || null,
           status: 'scheduled',
           tutor_id: userRole === 'admin' ? (form.tutor_id || null) : undefined,
@@ -363,8 +365,22 @@ export default function NewSessionPage() {
               </div>
             </div>
             <p className="text-xs text-slate-400 dark:text-slate-500 -mt-2">
-              Jam operasional TerDig 14.00–20.00 WIB. Sistem menolak sesi yang jamnya bentrok dengan sesi lain di tanggal yang sama (satu ruang kelas). Kapasitas bawaan 8 mengikuti aturan kelas kecil TerDig (maks 5–8 anak).
+              Jam operasional TerDig 14.00–20.00 WIB. Sistem menolak sesi yang jamnya bentrok dengan sesi lain di tanggal dan ruangan yang sama. Kapasitas bawaan 8 mengikuti aturan kelas kecil TerDig (maks 5–8 anak).
             </p>
+
+            {/* Ruangan */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Ruangan <span className="text-slate-400 dark:text-slate-500 font-normal">(opsional)</span>
+              </label>
+              <input
+                value={form.room}
+                onChange={(e) => setForm({ ...form, room: e.target.value })}
+                placeholder="mis. Ruang 1 (kosongkan bila hanya 1 ruangan)"
+                className="w-full border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-2.5 text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition"
+              />
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Sesi di ruangan berbeda boleh beririsan jam.</p>
+            </div>
 
             {/* Catatan */}
             <div>

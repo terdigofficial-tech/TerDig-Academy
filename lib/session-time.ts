@@ -1,7 +1,8 @@
 /**
  * Logika murni jam sesi & deteksi bentrok jadwal — tanpa dependensi Supabase.
- * TerDig berjalan di satu ruang kelas, jadi dua sesi di tanggal yang sama
- * dengan jam beririsan selalu dianggap bentrok (siapa pun tutornya).
+ * Dua sesi di tanggal yang sama dengan jam beririsan dianggap bentrok
+ * hanya bila berada di ruangan yang sama (ruangan kosong dianggap
+ * "ruang default" yang sama).
  */
 
 export interface SessionSlot {
@@ -11,6 +12,7 @@ export interface SessionSlot {
   start_time?: string | null; // 'HH:MM' atau 'HH:MM:SS'
   end_time?: string | null;
   status?: string;
+  room?: string | null;
 }
 
 /** Normalisasi 'HH:MM:SS' -> 'HH:MM'; null bila kosong. */
@@ -43,7 +45,8 @@ export function timesOverlap(
 
 /**
  * Cari sesi lain yang bentrok dengan kandidat. Mengembalikan sesi yang
- * bentrok pertama, atau null. Sesi cancelled dan sesi tanpa jam diabaikan.
+ * bentrok pertama, atau null. Sesi cancelled, sesi tanpa jam, dan sesi di
+ * ruangan berbeda diabaikan.
  */
 export function findSessionConflict(
   candidate: SessionSlot,
@@ -57,12 +60,23 @@ export function findSessionConflict(
     if (s.status === 'cancelled') continue;
     if (candidate.id && s.id === candidate.id) continue;
     if (s.date !== candidate.date) continue;
+    if (!roomsMatch(candidate.room, s.room)) continue;
     const sStart = normalizeTime(s.start_time);
     const sEnd = normalizeTime(s.end_time);
     if (!sStart || !sEnd) continue;
     if (timesOverlap(cStart, cEnd, sStart, sEnd)) return s;
   }
   return null;
+}
+
+/**
+ * Dua ruangan dianggap sama bila keduanya kosong (ruang default) atau
+ * teksnya sama setelah dinormalisasi (trim + lowercase).
+ */
+export function roomsMatch(a?: string | null, b?: string | null): boolean {
+  const na = (a || '').trim().toLowerCase();
+  const nb = (b || '').trim().toLowerCase();
+  return na === nb;
 }
 
 /** '14:00' + '15:30' -> '14.00–15.30'; kosong bila jam tidak lengkap. */

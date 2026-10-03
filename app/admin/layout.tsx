@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, LogOut, FileText, School, Tag, Menu, X, Moon, Sun, Film, Users2, UserCog, Wallet, UserPlus, Megaphone } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, CalendarClock, LogOut, FileText, School, Tag, Menu, X, Moon, Sun, Film, Users2, UserCog, Wallet, UserPlus, Megaphone } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import AdminErrorBoundary from '@/components/AdminErrorBoundary';
 import { useTheme } from '@/components/ThemeProvider';
@@ -84,6 +84,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/sessions" className={getMenuClass('/admin/sessions')} onClick={() => setSidebarOpen(false)}>
             <Calendar className="w-5 h-5" />
             Sesi
+          </Link>
+          <Link
+            href="/admin/schedules"
+            className={`${getMenuClass('/admin/schedules')} ${userRole === 'tutor' ? 'hidden' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <CalendarClock className="w-5 h-5" />
+            Jadwal Rutin
           </Link>
           <Link href="/admin/reports" className={getMenuClass('/admin/reports')} onClick={() => setSidebarOpen(false)}>
             <FileText className="w-5 h-5" />

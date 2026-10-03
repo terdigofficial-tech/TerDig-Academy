@@ -26,6 +26,7 @@ const createSessionSchema = z.object({
     .max(30, 'kapasitas maksimal 30')
     .optional()
     .default(8),
+  room: z.string().max(60, 'nama ruangan maksimal 60 karakter').optional().nullable(),
   notes: z.string().optional().nullable(),
   status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled']).optional().default('scheduled'),
 });
@@ -77,24 +78,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Cek bentrok jadwal: satu ruang kelas, sesi di tanggal yang sama tidak boleh beririsan jam
+    // Cek bentrok jadwal: sesi di tanggal & ruangan yang sama tidak boleh beririsan jam.
+    // Ruangan kosong dianggap "ruang default" yang sama (perilaku lama untuk 1 ruangan).
     if (startTime && endTime && validation.data.status !== 'cancelled') {
       const { data: sameDay, error: conflictQueryError } = await supabase
         .from('sessions')
-        .select('id, title, date, start_time, end_time, status')
+        .select('id, title, date, start_time, end_time, room, status')
         .eq('date', validation.data.date)
         .not('start_time', 'is', null);
       if (conflictQueryError) {
         return NextResponse.json({ error: conflictQueryError.message }, { status: 500 });
       }
       const conflict = findSessionConflict(
-        { date: validation.data.date, start_time: startTime, end_time: endTime, status: validation.data.status },
+        { date: validation.data.date, start_time: startTime, end_time: endTime, room: validation.data.room?.trim() || null, status: validation.data.status },
         sameDay || [],
       );
       if (conflict) {
         return NextResponse.json(
           {
-            error: `Bentrok jadwal dengan sesi "${conflict.title}" (${formatTimeRange(conflict.start_time, conflict.end_time)}) di tanggal yang sama`,
+            error: `Bentrok jadwal dengan sesi "${conflict.title}" (${formatTimeRange(conflict.start_time, conflict.end_time)}) di tanggal dan ruangan yang sama`,
           },
           { status: 409 },
         );
@@ -113,6 +115,7 @@ export async function POST(req: NextRequest) {
       start_time: startTime,
       end_time: endTime,
       capacity: validation.data.capacity,
+      room: validation.data.room?.trim() || null,
       notes: validation.data.notes || null,
       status: validation.data.status,
     };
