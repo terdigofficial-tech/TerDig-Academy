@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Edit2, Search, X, Filter, ChevronDown, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Users, Plus, Edit2, Search, X, Filter, ChevronDown, ToggleLeft, ToggleRight, Download } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import { tierLabel } from '@/lib/programs';
 
@@ -123,12 +123,20 @@ export default function StudentTableWithSearch({ students }: Props) {
     <div>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-slate-800 dark:text-white">Daftar Siswa</h2>
-        <Link
-          href="/admin/students/add"
-          className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 text-sm font-medium"
-        >
-          <Plus className="w-4 h-4" /> Tambah Siswa
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/admin/exports/students"
+            className="bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-5 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium"
+          >
+            <Download className="w-4 h-4" /> Ekspor Excel
+          </a>
+          <Link
+            href="/admin/students/add"
+            className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition flex items-center gap-2 text-sm font-medium"
+          >
+            <Plus className="w-4 h-4" /> Tambah Siswa
+          </Link>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}

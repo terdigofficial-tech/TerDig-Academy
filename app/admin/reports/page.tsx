@@ -44,6 +44,8 @@ export default function ReportsPage() {
   const [previewReport, setPreviewReport] = useState<Report | null>(null);
   const [sendingWA, setSendingWA] = useState<string | null>(null);
   const [tab, setTab] = useState<'session' | 'biweekly'>('session');
+  const [attFrom, setAttFrom] = useState('');
+  const [attTo, setAttTo] = useState('');
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -247,6 +249,30 @@ export default function ReportsPage() {
         <BiweeklyTab />
       ) : (
       <>
+
+      {/* Ekspor kehadiran Excel */}
+      <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-100 dark:border-slate-700 p-4 mb-6 flex flex-wrap items-end gap-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <Download className="w-4 h-4 text-indigo-500" /> Ekspor Kehadiran (Excel)
+        </div>
+        <div>
+          <label className="block text-[11px] text-slate-400 mb-1">Dari</label>
+          <input type="date" value={attFrom} onChange={(e) => setAttFrom(e.target.value)}
+            className="border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+        </div>
+        <div>
+          <label className="block text-[11px] text-slate-400 mb-1">Sampai</label>
+          <input type="date" value={attTo} onChange={(e) => setAttTo(e.target.value)}
+            className="border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+        </div>
+        <a
+          href={`/api/admin/exports/attendance?from=${attFrom}&to=${attTo}`}
+          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition text-sm font-medium"
+        >
+          <Download className="w-4 h-4" /> Unduh
+        </a>
+        <p className="text-[11px] text-slate-400 w-full">Kosongkan tanggal untuk 30 hari terakhir.</p>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

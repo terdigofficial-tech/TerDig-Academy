@@ -32,6 +32,7 @@ const ADMIN_ONLY_API = [
   '/api/admin/biweekly',
   '/api/admin/broadcasts',
   '/api/admin/recurring-schedules',
+  '/api/admin/exports',
 ];
 
 function isAdminOnlyPath(pathname: string, patterns: string[]): boolean {

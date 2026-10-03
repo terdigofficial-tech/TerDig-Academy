@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Loader2, Wallet, Plus, Sparkles, X, Trash2, Ban, RotateCcw, MessageCircle, Receipt,
+  Loader2, Wallet, Plus, Sparkles, X, Trash2, Ban, RotateCcw, MessageCircle, Receipt, Download,
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import {
@@ -301,14 +301,22 @@ export default function SppPage() {
     <div>
       <Toaster position="top-right" />
 
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-          <Wallet className="w-8 h-8 text-indigo-500" />
-          SPP &amp; Tagihan
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          Kelola tagihan SPP bulanan, catat pembayaran QRIS/transfer/tunai, dan pantau tunggakan per periode.
-        </p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
+            <Wallet className="w-8 h-8 text-indigo-500" />
+            SPP &amp; Tagihan
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            Kelola tagihan SPP bulanan, catat pembayaran QRIS/transfer/tunai, dan pantau tunggakan per periode.
+          </p>
+        </div>
+        <a
+          href={`/api/admin/exports/invoices?period=${period}`}
+          className="shrink-0 inline-flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition text-sm font-medium"
+        >
+          <Download className="w-4 h-4" /> Ekspor Excel
+        </a>
       </div>
 
       {/* Filter periode */}
